@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Expense, CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS } from '@/types/expense';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface RecentExpensesProps {
   expenses: Expense[];
 }
 
 export function RecentExpenses({ expenses }: RecentExpensesProps) {
+  const { formatAmount } = useCurrency();
   const recentExpenses = expenses.slice(0, 5);
 
   return (
@@ -50,7 +52,7 @@ export function RecentExpenses({ expenses }: RecentExpensesProps) {
                   </p>
                 </div>
                 <p className="font-semibold text-foreground flex-shrink-0">
-                  ₦{expense.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                  {formatAmount(expense.amount)}
                 </p>
               </div>
             ))}

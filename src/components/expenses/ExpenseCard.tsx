@@ -3,6 +3,7 @@ import { Expense, CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS } from '@/typ
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useCurrency } from '@/context/CurrencyContext';
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -11,6 +12,7 @@ interface ExpenseCardProps {
 }
 
 export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
+  const { formatAmount } = useCurrency();
   const categoryColor = CATEGORY_COLORS[expense.category];
 
   return (
@@ -27,7 +29,7 @@ export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="font-semibold text-foreground text-lg">
-                ₦{expense.amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                {formatAmount(expense.amount)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {CATEGORY_LABELS[expense.category]}

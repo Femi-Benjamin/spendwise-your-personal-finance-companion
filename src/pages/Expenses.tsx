@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useCurrency } from '@/context/CurrencyContext';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { ExpenseForm } from '@/components/expenses/ExpenseForm';
@@ -19,6 +20,7 @@ import { Plus, Loader2, Receipt } from 'lucide-react';
 import { Expense, ExpenseCategory, ExpenseFormData } from '@/types/expense';
 
 export default function Expenses() {
+  const { formatAmount } = useCurrency();
   const [formOpen, setFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -92,7 +94,7 @@ export default function Expenses() {
               {expenses.length} expense{expenses.length !== 1 ? 's' : ''} found
             </p>
             <p className="font-medium text-foreground">
-              Total: ₦{totalFiltered.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+              Total: {formatAmount(totalFiltered)}
             </p>
           </div>
         )}

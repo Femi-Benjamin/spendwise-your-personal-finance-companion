@@ -1,6 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { LogOut, Wallet, LayoutDashboard, Receipt } from 'lucide-react';
+import { LogOut, Wallet, LayoutDashboard, Receipt, Settings as SettingsIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function Header() {
@@ -10,6 +10,7 @@ export function Header() {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/expenses', label: 'Expenses', icon: Receipt },
+    { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 
   return (

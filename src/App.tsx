@@ -5,43 +5,62 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Expenses from "./pages/Expenses";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "./components/layout/ThemeProvider";
+import { CurrencyProvider } from "./context/CurrencyContext";
+import { BudgetProvider } from "./context/BudgetContext";
+import { PreferencesProvider } from "./context/PreferencesContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/expenses"
-              element={
-                <ProtectedRoute>
-                  <Expenses />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <CurrencyProvider>
+        <BudgetProvider>
+          <PreferencesProvider>
+            <ThemeProvider defaultTheme="system" storageKey="spendwise-theme">
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/expenses"
+                      element={
+                        <ProtectedRoute>
+                          <Expenses />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute>
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </ThemeProvider>
+          </PreferencesProvider>
+        </BudgetProvider>
+      </CurrencyProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

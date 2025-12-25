@@ -19,48 +19,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    // MOCK AUTH: Always set a local user immediately
+    const mockUser = {
+      id: 'local-user',
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    } as User;
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    setUser(mockUser);
+    setSession({
+      access_token: 'mock-token',
+      refresh_token: 'mock-refresh-token',
+      expires_in: 3600,
+      token_type: 'bearer',
+      user: mockUser
+    } as Session);
+    setLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
-    return { error };
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // No-op for local mode
   };
 
   return (

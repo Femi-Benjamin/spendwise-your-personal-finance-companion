@@ -34,9 +34,13 @@ export function AuthForm() {
     setLoading(true);
     setError(null);
 
-    const { error } = isLogin
+    const result = isLogin
       ? await signIn(data.email, data.password)
       : await signUp(data.email, data.password);
+
+    console.log('Auth result:', result);
+
+    const { error } = result;
 
     if (error) {
       if (error.message.includes('User already registered')) {
