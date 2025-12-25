@@ -18,28 +18,33 @@ export function useExpenses(options: UseExpensesOptions = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const getLocalExpenses = (): Expense[] => {
+  // Dynamic Local Storage Key based on User ID
+  const getStorageKey = useCallback(() => {
+    if (!user) return null;
+    return `spendwise_expenses_${user.id}`;
+  }, [user]);
+
+  const getLocalExpenses = useCallback((): Expense[] => {
+    const key = getStorageKey();
+    if (!key) return [];
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const stored = localStorage.getItem(key);
       return stored ? JSON.parse(stored) : [];
     } catch (e) {
       console.error("Failed to parse local expenses", e);
       return [];
     }
-  };
+  }, [getStorageKey]);
 
-  const saveLocalExpenses = (newExpenses: Expense[]) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newExpenses));
-  };
+  const saveLocalExpenses = useCallback((newExpenses: Expense[]) => {
+    const key = getStorageKey();
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(newExpenses));
+    }
+  }, [getStorageKey]);
 
   const fetchExpenses = useCallback(async () => {
-    const isLocalUser = user?.id === "local-user";
-
-    // Allow fetching if it's a local user OR a valid UUID
-    const isValidUUID = (id: string) =>
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-    if (!user || (!isLocalUser && !isValidUUID(user.id))) {
+    if (!user) {
       setExpenses([]);
       setLoading(false);
       return;
@@ -47,90 +52,30 @@ export function useExpenses(options: UseExpensesOptions = {}) {
 
     setLoading(true);
 
-    if (isLocalUser) {
-      // Local Storage Mode
-      let data = getLocalExpenses();
+    // Hybrid Strategy: Always load from Local Storage keyed by User ID
+    // This provides "Individual Accounts" + "Offline Capabilities"
+    let data = getLocalExpenses();
 
-      // Filter by user_id check (implicitly all local expenses belong to local-user)
-      data = data.filter(item => item.user_id === 'local-user');
-
-      if (options.category && options.category !== "all") {
-        data = data.filter((item) => item.category === options.category);
-      }
-
-      if (options.startDate) {
-        const start = options.startDate.toISOString().split("T")[0];
-        data = data.filter((item) => item.expense_date >= start);
-      }
-
-      if (options.endDate) {
-        const end = options.endDate.toISOString().split("T")[0];
-        data = data.filter((item) => item.expense_date <= end);
-      }
-
-      // Sort descending
-      data.sort((a, b) => new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime());
-
-      setExpenses(data);
-      setLoading(false);
-      return;
+    if (options.category && options.category !== "all") {
+      data = data.filter((item) => item.category === options.category);
     }
 
-    // Remote (Supabase) Mode
-    try {
-      let query = supabase
-        .from("expenses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("expense_date", { ascending: false });
-
-      if (options.category && options.category !== "all") {
-        query = query.eq("category", options.category);
-      }
-
-      if (options.startDate) {
-        query = query.gte(
-          "expense_date",
-          options.startDate.toISOString().split("T")[0]
-        );
-      }
-
-      if (options.endDate) {
-        query = query.lte(
-          "expense_date",
-          options.endDate.toISOString().split("T")[0]
-        );
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const transformedData: Expense[] = (data || []).map((item) => ({
-        id: item.id,
-        user_id: item.user_id,
-        amount: Number(item.amount),
-        category: item.category as ExpenseCategory,
-        description: item.description,
-        expense_date: item.expense_date,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-      }));
-
-      setExpenses(transformedData);
-    } catch (error: unknown) {
-      toast({
-        title: "Error fetching expenses",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    if (options.startDate) {
+      const start = options.startDate.toISOString().split("T")[0];
+      data = data.filter((item) => item.expense_date >= start);
     }
-  }, [user, options.category, options.startDate, options.endDate, toast]);
+
+    if (options.endDate) {
+      const end = options.endDate.toISOString().split("T")[0];
+      data = data.filter((item) => item.expense_date <= end);
+    }
+
+    // Sort descending
+    data.sort((a, b) => new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime());
+
+    setExpenses(data);
+    setLoading(false);
+  }, [user, options.category, options.startDate, options.endDate, getLocalExpenses]);
 
   useEffect(() => {
     fetchExpenses();
@@ -139,157 +84,82 @@ export function useExpenses(options: UseExpensesOptions = {}) {
   const addExpense = async (data: ExpenseFormData) => {
     if (!user) return { error: new Error("Not authenticated") };
 
-    if (user.id === "local-user") {
-      try {
-        const newExpense: Expense = {
-          id: crypto.randomUUID(),
-          user_id: "local-user",
-          amount: data.amount,
-          category: data.category,
-          description: data.description || null,
-          expense_date: data.expense_date,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-
-        const current = getLocalExpenses();
-        saveLocalExpenses([newExpense, ...current]);
-
-        toast({
-          title: "Expense added",
-          description: "Your expense has been recorded locally.",
-        });
-
-        await fetchExpenses();
-        return { error: null };
-      } catch (e) {
-        return { error: e };
-      }
-    }
-
     try {
-      const { error } = await supabase.from("expenses").insert({
+      const newExpense: Expense = {
+        id: crypto.randomUUID(),
         user_id: user.id,
         amount: data.amount,
         category: data.category,
         description: data.description || null,
         expense_date: data.expense_date,
-      });
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      if (error) throw error;
+      const current = getLocalExpenses();
+      // saveLocalExpenses is a callback so we need to be careful, but it's fine here.
+      // Actually getLocalExpenses returns the array.
+      const key = getStorageKey();
+      if (key) {
+        localStorage.setItem(key, JSON.stringify([newExpense, ...current]));
+      }
 
       toast({
         title: "Expense added",
-        description: "Your expense has been recorded successfully.",
+        description: "Your expense has been recorded.",
       });
 
       await fetchExpenses();
       return { error: null };
-    } catch (error: unknown) {
-      toast({
-        title: "Error adding expense",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-        variant: "destructive",
-      });
-      return { error };
+    } catch (e) {
+      return { error: e };
     }
   };
 
   const updateExpense = async (id: string, data: Partial<ExpenseFormData>) => {
     if (!user) return { error: new Error("Not authenticated") };
 
-    if (user.id === "local-user") {
-      try {
-        const current = getLocalExpenses();
-        const index = current.findIndex(e => e.id === id);
-
-        if (index === -1) throw new Error("Expense not found");
-
-        const updated = { ...current[index], ...data, updated_at: new Date().toISOString() };
-        // Ensure description is string | null
-        if (data.description === undefined && current[index].description === null) {
-          updated.description = null;
-        }
-
-        current[index] = updated as Expense;
-        saveLocalExpenses(current);
-
-        toast({
-          title: "Expense updated",
-          description: "Your expense has been updated locally.",
-        });
-
-        await fetchExpenses();
-        return { error: null };
-      } catch (e) {
-        return { error: e };
-      }
-    }
-
     try {
-      const { error } = await supabase
-        .from("expenses")
-        .update({
-          ...data,
-          description: data.description || null,
-        })
-        .eq("id", id)
-        .eq("user_id", user.id);
+      const current = getLocalExpenses();
+      const index = current.findIndex(e => e.id === id);
 
-      if (error) throw error;
+      if (index === -1) throw new Error("Expense not found");
+
+      const updated = { ...current[index], ...data, updated_at: new Date().toISOString() };
+      if (data.description === undefined && current[index].description === null) {
+        updated.description = null;
+      }
+
+      current[index] = updated as Expense;
+
+      const key = getStorageKey();
+      if (key) {
+        localStorage.setItem(key, JSON.stringify(current));
+      }
 
       toast({
         title: "Expense updated",
-        description: "Your expense has been updated successfully.",
+        description: "Your expense has been updated.",
       });
 
       await fetchExpenses();
       return { error: null };
-    } catch (error: unknown) {
-      toast({
-        title: "Error updating expense",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-        variant: "destructive",
-      });
-      return { error };
+    } catch (e) {
+      return { error: e };
     }
   };
 
   const deleteExpense = async (id: string) => {
     if (!user) return { error: new Error("Not authenticated") };
 
-    if (user.id === "local-user") {
-      try {
-        const current = getLocalExpenses();
-        const filtered = current.filter(e => e.id !== id);
-        saveLocalExpenses(filtered);
-
-        toast({
-          title: "Expense deleted",
-          description: "Your expense has been removed locally.",
-        });
-
-        await fetchExpenses();
-        return { error: null };
-      } catch (e) {
-        return { error: e };
-      }
-    }
-
     try {
-      const { error } = await supabase
-        .from("expenses")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
+      const current = getLocalExpenses();
+      const filtered = current.filter(e => e.id !== id);
 
-      if (error) throw error;
+      const key = getStorageKey();
+      if (key) {
+        localStorage.setItem(key, JSON.stringify(filtered));
+      }
 
       toast({
         title: "Expense deleted",
@@ -298,16 +168,8 @@ export function useExpenses(options: UseExpensesOptions = {}) {
 
       await fetchExpenses();
       return { error: null };
-    } catch (error: unknown) {
-      toast({
-        title: "Error deleting expense",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-        variant: "destructive",
-      });
-      return { error };
+    } catch (e) {
+      return { error: e };
     }
   };
 

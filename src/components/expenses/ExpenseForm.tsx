@@ -24,6 +24,8 @@ import {
 import { Loader2 } from 'lucide-react';
 import { Expense, ExpenseFormData, CATEGORY_LABELS, CATEGORY_ICONS, ExpenseCategory } from '@/types/expense';
 
+import { useCurrency } from '@/context/CurrencyContext';
+
 const expenseSchema = z.object({
   amount: z.coerce.number().positive('Amount must be greater than 0'),
   category: z.enum(['food', 'transportation', 'utilities', 'entertainment', 'shopping', 'healthcare', 'education', 'housing', 'other'] as const),
@@ -39,6 +41,7 @@ interface ExpenseFormProps {
 }
 
 export function ExpenseForm({ open, onOpenChange, expense, onSubmit }: ExpenseFormProps) {
+  const { symbol, convertToBeSaved, convertToDisplay } = useCurrency();
   const isEditing = !!expense;
 
   const {
@@ -60,7 +63,8 @@ export function ExpenseForm({ open, onOpenChange, expense, onSubmit }: ExpenseFo
 
   useEffect(() => {
     if (expense) {
-      setValue('amount', expense.amount);
+      // expense.amount is stored in NGN (Base), we need to show it in Selected Currency
+      setValue('amount', convertToDisplay(expense.amount));
       setValue('category', expense.category);
       setValue('description', expense.description || '');
       setValue('expense_date', expense.expense_date);
@@ -75,7 +79,19 @@ export function ExpenseForm({ open, onOpenChange, expense, onSubmit }: ExpenseFo
   }, [expense, setValue, reset]);
 
   const handleFormSubmit = async (data: ExpenseFormData) => {
-    const { error } = await onSubmit(data);
+    // If editing, amount might be unchanged, but if we are editing, we assume user is seeing the DISPLAY amount.
+    // Actually when editing, we load the stored amount (NGN) into the form.
+    // Wait, if we load NGN into the form, it will show NGN amount even if currency is USD.
+    // We need to Convert To Display when loading existing expense too!
+
+    // For now, let's fix submission first. User enters amount in current currency.
+    const amountInBase = convertToBeSaved(data.amount);
+
+    const { error } = await onSubmit({
+      ...data,
+      amount: amountInBase
+    });
+
     if (!error) {
       onOpenChange(false);
       reset();
@@ -100,7 +116,7 @@ export function ExpenseForm({ open, onOpenChange, expense, onSubmit }: ExpenseFo
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₦</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{symbol}</span>
               <Input
                 id="amount"
                 type="number"

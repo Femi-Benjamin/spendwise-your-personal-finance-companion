@@ -2,10 +2,20 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 
 export type Currency = 'NGN' | 'USD' | 'EUR' | 'GBP';
 
+// Exchange rates relative to NGN (Base Currency)
+const EXCHANGE_RATES: Record<Currency, number> = {
+    NGN: 1,
+    USD: 1500,
+    EUR: 1650,
+    GBP: 1900,
+};
+
 interface CurrencyContextType {
     currency: Currency;
     setCurrency: (c: Currency) => void;
     formatAmount: (amount: number) => string;
+    convertToBeSaved: (amount: number) => number;
+    convertToDisplay: (amount: number) => number;
     symbol: string;
 }
 
@@ -35,16 +45,36 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(LOCAL_STORAGE_KEY, c);
     };
 
+    // Convert from Base (NGN) to Selected Currency for Display
+    const convertToDisplay = (amount: number) => {
+        if (currency === 'NGN') return amount;
+        return amount / EXCHANGE_RATES[currency];
+    };
+
+    // Convert from Selected Currency to Base (NGN) for Saving
+    const convertToBeSaved = (amount: number) => {
+        if (currency === 'NGN') return amount;
+        return amount * EXCHANGE_RATES[currency];
+    };
+
     const formatAmount = (amount: number) => {
+        const converted = convertToDisplay(amount);
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: currency,
             currencyDisplay: 'narrowSymbol',
-        }).format(amount);
+        }).format(converted);
     };
 
     return (
-        <CurrencyContext.Provider value={{ currency, setCurrency, formatAmount, symbol: CURRENCY_SYMBOLS[currency] }}>
+        <CurrencyContext.Provider value={{
+            currency,
+            setCurrency,
+            formatAmount,
+            convertToBeSaved,
+            convertToDisplay,
+            symbol: CURRENCY_SYMBOLS[currency]
+        }}>
             {children}
         </CurrencyContext.Provider>
     );

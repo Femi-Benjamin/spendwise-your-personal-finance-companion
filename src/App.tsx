@@ -13,6 +13,7 @@ import { ThemeProvider } from "./components/layout/ThemeProvider";
 import { CurrencyProvider } from "./context/CurrencyContext";
 import { BudgetProvider } from "./context/BudgetContext";
 import { PreferencesProvider } from "./context/PreferencesContext";
+import AuthPage from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
                 <Sonner />
                 <BrowserRouter>
                   <Routes>
+                    <Route path="/auth" element={<AuthPage />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route
                       path="/dashboard"
