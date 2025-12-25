@@ -1,18 +1,18 @@
-import { useMemo } from 'react';
-import { startOfMonth, endOfMonth } from 'date-fns';
-import { useCurrency } from '@/context/CurrencyContext';
-import { useExpenses } from '@/hooks/useExpenses';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { CategoryChart } from '@/components/dashboard/CategoryChart';
-import { RecentExpenses } from '@/components/dashboard/RecentExpenses';
-import { TrendChart } from '@/components/dashboard/TrendChart';
-import { useBudget } from '@/context/BudgetContext';
-import { usePreferences } from '@/context/PreferencesContext';
-import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, Receipt, Loader2 } from 'lucide-react';
-import { ExpenseCategory } from '@/types/expense';
+import { useMemo } from "react";
+import { startOfMonth, endOfMonth } from "date-fns";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useExpenses } from "@/hooks/useExpenses";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { CategoryChart } from "@/components/dashboard/CategoryChart";
+import { RecentExpenses } from "@/components/dashboard/RecentExpenses";
+import { TrendChart } from "@/components/dashboard/TrendChart";
+import { useBudget } from "@/context/BudgetContext";
+import { usePreferences } from "@/context/PreferencesContext";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Wallet, TrendingUp, Receipt, Loader2 } from "lucide-react";
+import { ExpenseCategory } from "@/types/expense";
 
 export default function Dashboard() {
   const { formatAmount } = useCurrency();
@@ -61,8 +61,12 @@ export default function Dashboard() {
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Track your spending at a glance</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Track your spending at a glance
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -71,12 +75,17 @@ export default function Dashboard() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   <span>Monthly Budget Goal</span>
-                  <span className="text-muted-foreground">{formatAmount(stats.total)} / {formatAmount(monthlyBudget)}</span>
+                  <span className="text-muted-foreground">
+                    {formatAmount(stats.total)} / {formatAmount(monthlyBudget)}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Progress value={getPercentageUsed(stats.total)} className="h-2" />
+                  <Progress
+                    value={getPercentageUsed(stats.total)}
+                    className="h-2"
+                  />
                   <p className="text-xs text-muted-foreground text-right">
                     {getPercentageUsed(stats.total).toFixed(1)}% used
                   </p>

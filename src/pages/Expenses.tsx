@@ -1,11 +1,11 @@
-import { useState, useMemo } from 'react';
-import { useExpenses } from '@/hooks/useExpenses';
-import { useCurrency } from '@/context/CurrencyContext';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { ExpenseCard } from '@/components/expenses/ExpenseCard';
-import { ExpenseForm } from '@/components/expenses/ExpenseForm';
-import { ExpenseFilters } from '@/components/expenses/ExpenseFilters';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo } from "react";
+import { useExpenses } from "@/hooks/useExpenses";
+import { useCurrency } from "@/context/CurrencyContext";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { ExpenseCard } from "@/components/expenses/ExpenseCard";
+import { ExpenseForm } from "@/components/expenses/ExpenseForm";
+import { ExpenseFilters } from "@/components/expenses/ExpenseFilters";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +15,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Plus, Loader2, Receipt } from 'lucide-react';
-import { Expense, ExpenseCategory, ExpenseFormData } from '@/types/expense';
+} from "@/components/ui/alert-dialog";
+import { Plus, Loader2, Receipt } from "lucide-react";
+import { Expense, ExpenseCategory, ExpenseFormData } from "@/types/expense";
 
 export default function Expenses() {
   const { formatAmount } = useCurrency();
@@ -25,17 +25,21 @@ export default function Expenses() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const [category, setCategory] = useState<ExpenseCategory | 'all'>('all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [category, setCategory] = useState<ExpenseCategory | "all">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const filterOptions = useMemo(() => ({
-    category,
-    startDate: startDate ? new Date(startDate) : undefined,
-    endDate: endDate ? new Date(endDate) : undefined,
-  }), [category, startDate, endDate]);
+  const filterOptions = useMemo(
+    () => ({
+      category,
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+    }),
+    [category, startDate, endDate]
+  );
 
-  const { expenses, loading, addExpense, updateExpense, deleteExpense } = useExpenses(filterOptions);
+  const { expenses, loading, addExpense, updateExpense, deleteExpense } =
+    useExpenses(filterOptions);
 
   const handleOpenForm = (expense?: Expense) => {
     setEditingExpense(expense || null);
@@ -57,9 +61,9 @@ export default function Expenses() {
   };
 
   const handleClearFilters = () => {
-    setCategory('all');
-    setStartDate('');
-    setEndDate('');
+    setCategory("all");
+    setStartDate("");
+    setEndDate("");
   };
 
   const totalFiltered = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -69,8 +73,12 @@ export default function Expenses() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Expenses</h1>
-            <p className="text-muted-foreground mt-1">Manage and track all your expenses</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Expenses
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and track all your expenses
+            </p>
           </div>
           <Button onClick={() => handleOpenForm()} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -91,7 +99,7 @@ export default function Expenses() {
         {expenses.length > 0 && (
           <div className="flex items-center justify-between text-sm">
             <p className="text-muted-foreground">
-              {expenses.length} expense{expenses.length !== 1 ? 's' : ''} found
+              {expenses.length} expense{expenses.length !== 1 ? "s" : ""} found
             </p>
             <p className="font-medium text-foreground">
               Total: {formatAmount(totalFiltered)}
@@ -108,13 +116,15 @@ export default function Expenses() {
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <Receipt className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">No expenses found</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              No expenses found
+            </h3>
             <p className="text-muted-foreground mb-4 max-w-sm">
-              {category !== 'all' || startDate || endDate
-                ? 'No expenses match your current filters. Try adjusting them.'
-                : 'Start tracking your spending by adding your first expense.'}
+              {category !== "all" || startDate || endDate
+                ? "No expenses match your current filters. Try adjusting them."
+                : "Start tracking your spending by adding your first expense."}
             </p>
-            {category === 'all' && !startDate && !endDate && (
+            {category === "all" && !startDate && !endDate && (
               <Button onClick={() => handleOpenForm()} className="gap-2">
                 <Plus className="w-4 h-4" />
                 Add Your First Expense
@@ -142,17 +152,24 @@ export default function Expenses() {
         onSubmit={handleSubmit}
       />
 
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <AlertDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Expense</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this expense? This action cannot be undone.
+              Are you sure you want to delete this expense? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

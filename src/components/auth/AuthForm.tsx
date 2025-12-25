@@ -1,17 +1,23 @@
-import { useState } from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wallet } from 'lucide-react';
+import { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2, Wallet } from "lucide-react";
 
 const authSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type AuthFormData = z.infer<typeof authSchema>;
@@ -38,15 +44,15 @@ export function AuthForm() {
       ? await signIn(data.email, data.password)
       : await signUp(data.email, data.password);
 
-    console.log('Auth result:', result);
+    console.log("Auth result:", result);
 
     const { error } = result;
 
     if (error) {
-      if (error.message.includes('User already registered')) {
-        setError('This email is already registered. Please sign in instead.');
-      } else if (error.message.includes('Invalid login credentials')) {
-        setError('Invalid email or password. Please try again.');
+      if (error.message.includes("User already registered")) {
+        setError("This email is already registered. Please sign in instead.");
+      } else if (error.message.includes("Invalid login credentials")) {
+        setError("Invalid email or password. Please try again.");
       } else {
         setError(error.message);
       }
@@ -63,18 +69,20 @@ export function AuthForm() {
             <Wallet className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">SpendWise</h1>
-          <p className="text-muted-foreground mt-2">Track your expenses, build your wealth</p>
+          <p className="text-muted-foreground mt-2">
+            Track your expenses, build your wealth
+          </p>
         </div>
 
         <Card className="border-0 shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">
-              {isLogin ? 'Welcome back' : 'Create an account'}
+              {isLogin ? "Welcome back" : "Create an account"}
             </CardTitle>
             <CardDescription className="text-center">
               {isLogin
-                ? 'Enter your credentials to access your account'
-                : 'Enter your email to create your account'}
+                ? "Enter your credentials to access your account"
+                : "Enter your email to create your account"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -85,11 +93,13 @@ export function AuthForm() {
                   id="email"
                   type="email"
                   placeholder="name@example.com"
-                  {...register('email')}
+                  {...register("email")}
                   className="h-12"
                 />
                 {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
@@ -99,11 +109,13 @@ export function AuthForm() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
-                  {...register('password')}
+                  {...register("password")}
                   className="h-12"
                 />
                 {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password.message}</p>
+                  <p className="text-sm text-destructive">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
@@ -113,22 +125,28 @@ export function AuthForm() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full h-12 text-base" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-12 text-base"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isLogin ? 'Signing in...' : 'Creating account...'}
+                    {isLogin ? "Signing in..." : "Creating account..."}
                   </>
                 ) : isLogin ? (
-                  'Sign In'
+                  "Sign In"
                 ) : (
-                  'Create Account'
+                  "Create Account"
                 )}
               </Button>
 
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">
-                  {isLogin ? "Don't have an account? " : 'Already have an account? '}
+                  {isLogin
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
                 </span>
                 <button
                   type="button"
@@ -138,7 +156,7 @@ export function AuthForm() {
                   }}
                   className="text-primary hover:underline font-medium"
                 >
-                  {isLogin ? 'Sign up' : 'Sign in'}
+                  {isLogin ? "Sign up" : "Sign in"}
                 </button>
               </div>
             </form>
