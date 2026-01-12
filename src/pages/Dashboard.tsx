@@ -123,3 +123,18 @@ export default function Dashboard() {
     </AppLayout>
   );
 }
+// Project: SpendWise - Your Personal Finance Companion
+// SpendWise is a modern, responsive React application designed to help users track their personal expenses and visualize their spending habits.
+
+// Core Features
+// Dashboard: A visual overview of your finances, including total spending for the month, average transaction size, and category breakdowns.
+// Expense Tracking: Users can add, edit, and delete expense entries with details like amount, date, category, and description.
+// Data Visualization: Uses charts (Pie charts, etc.) to show spending distribution across categories (Food, Transport, Utilities, etc.).
+// Local Offline Mode: Recently modified to run entirely offline. It bypasses the need for a server login and saves all your data securely to your device's Local Storage, effectively acting as a private, standalone app.
+// Tech Stack
+// Frontend: React (with TypeScript) for a robust and type-safe UI.
+// Build Tool: Vite for lightning-fast development and building.
+// Styling: Tailwind CSS combined with shadcn/ui components for a premium, accessible, and clean design.
+// State Management: TanStack Query (React Query) for efficient data handling.
+// storage: LocalStorage (previously Supabase) for persisting user data.
+// In essence, it is a sleek, "local-first" financial tracker that helps you stay on top of your budget without needing an account or internet connection.

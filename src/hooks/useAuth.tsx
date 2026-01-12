@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+// Intentionally do not call Supabase when auth is disabled
 
 interface AuthContextType {
   user: User | null;
@@ -19,43 +19,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Authentication is disabled: provide a local pseudo-user so
+    // app features that rely on a user id (local storage keys, etc.) continue to work.
+    const fakeUser = {
+      id: 'local_user',
+      email: 'local@localhost',
+      aud: 'authenticated',
+      app_metadata: {},
+      user_metadata: {},
+      role: 'authenticated',
+      created_at: new Date().toISOString(),
+    } as unknown as User;
 
-    // Listen for changes on auth state (sign in, sign out, etc.)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    setSession(null);
+    setUser(fakeUser);
+    setLoading(false);
+    return () => {};
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    return { error };
+  // Auth disabled: stubbed functions that return success without network calls
+  const signUp = async (_email: string, _password: string) => {
+    return { error: null } as { error: Error | null };
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+  const signIn = async (_email: string, _password: string) => {
+    return { error: null } as { error: Error | null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // noop
+    return;
   };
 
   return (
