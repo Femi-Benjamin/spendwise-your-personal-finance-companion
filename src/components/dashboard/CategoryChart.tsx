@@ -31,9 +31,9 @@ export function CategoryChart({ data }: CategoryChartProps) {
   }
 
   return (
-    <Card className="h-full">
+    <Card className="h-full transition-all duration-300 hover:shadow-md">
       <CardHeader>
-        <CardTitle className="text-lg">Spending by Category</CardTitle>
+        <CardTitle className="text-lg transition-colors duration-300">Spending by Category</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -71,7 +71,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 formatter={(value, entry: any) => {
                   const percentage = ((entry.payload.value / total) * 100).toFixed(1);
                   return (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground transition-colors duration-300">
                       {value} ({percentage}%)
                     </span>
                   );

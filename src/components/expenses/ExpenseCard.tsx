@@ -3,7 +3,7 @@ import { Expense, CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_COLORS } from '@/typ
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Pencil, Trash2 } from 'lucide-react';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrency } from '@/context/useCurrency';
 
 interface ExpenseCardProps {
   expense: Expense;
@@ -16,10 +16,10 @@ export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
   const categoryColor = CATEGORY_COLORS[expense.category];
 
   return (
-    <Card className="group p-4 hover:shadow-md transition-all duration-200 border border-border">
+    <Card className="group p-4 transition-all duration-300 ease-out border border-border hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5 animate-fade-in">
       <div className="flex items-start gap-4">
         <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+          className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0 transition-all duration-300 group-hover:scale-110"
           style={{ backgroundColor: `${categoryColor}20` }}
         >
           {CATEGORY_ICONS[expense.category]}
@@ -28,7 +28,7 @@ export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="font-semibold text-foreground text-lg">
+              <p className="font-semibold text-foreground text-lg transition-colors duration-300 group-hover:text-primary">
                 {formatAmount(expense.amount)}
               </p>
               <p className="text-sm text-muted-foreground">
@@ -48,12 +48,12 @@ export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
             </p>
           )}
 
-          <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onEdit(expense)}
-              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+              className="h-8 px-2 text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               <Pencil className="w-4 h-4 mr-1" />
               Edit
@@ -62,7 +62,7 @@ export function ExpenseCard({ expense, onEdit, onDelete }: ExpenseCardProps) {
               variant="ghost"
               size="sm"
               onClick={() => onDelete(expense.id)}
-              className="h-8 px-2 text-muted-foreground hover:text-destructive"
+              className="h-8 px-2 text-muted-foreground hover:text-destructive transition-colors duration-200"
             >
               <Trash2 className="w-4 h-4 mr-1" />
               Delete

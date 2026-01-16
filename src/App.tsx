@@ -26,7 +26,7 @@ const App = () => (
             <ThemeProvider defaultTheme="system" storageKey="spendwise-theme">
               <TooltipProvider>
                 <Toaster />
-                <Sonner />
+                <Sonner position="bottom-right" visibleToasts={2} />
                 <BrowserRouter>
                   <Routes>
                     <Route path="/auth" element={<AuthPage />} />

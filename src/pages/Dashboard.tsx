@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { startOfMonth, endOfMonth } from "date-fns";
-import { useCurrency } from "@/context/CurrencyContext";
+import { useCurrency } from "@/context/useCurrency";
 import { useExpenses } from "@/hooks/useExpenses";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -9,15 +9,26 @@ import { RecentExpenses } from "@/components/dashboard/RecentExpenses";
 import { TrendChart } from "@/components/dashboard/TrendChart";
 import { useBudget } from "@/context/BudgetContext";
 import { usePreferences } from "@/context/PreferencesContext";
+import { useBudgetWarning } from "@/hooks/useBudgetWarning";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, Receipt, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Wallet,
+  TrendingUp,
+  Receipt,
+  Loader2,
+  AlertTriangle,
+  AlertCircle,
+} from "lucide-react";
 import { ExpenseCategory } from "@/types/expense";
 
 export default function Dashboard() {
   const { formatAmount } = useCurrency();
-  const { monthlyBudget, getPercentageUsed } = useBudget();
+  const { monthlyBudget, getPercentageUsed, getBudgetStatus } = useBudget();
   const { showTrendChart } = usePreferences();
+  useBudgetWarning(); // Hook triggers notifications
+
   const now = new Date();
   const monthStart = startOfMonth(now);
   const monthEnd = endOfMonth(now);
@@ -47,6 +58,11 @@ export default function Dashboard() {
     return { total, count, average, categoryData };
   }, [expenses]);
 
+  const budgetStatus = getBudgetStatus(stats.total);
+  const percentageUsed = getPercentageUsed(stats.total);
+  const isWarning = budgetStatus === "warning";
+  const isExceeded = budgetStatus === "exceeded";
+
   if (loading) {
     return (
       <AppLayout>
@@ -60,7 +76,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
+        <div className="animate-fade-in">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Dashboard
           </h1>
@@ -69,9 +85,64 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Budget Warning/Exceeded Alert */}
+        {monthlyBudget > 0 && (isWarning || isExceeded) && (
+          <Alert
+            className={`animate-slide-up border-l-4 ${
+              isExceeded
+                ? "border-l-destructive bg-destructive/5"
+                : "border-l-yellow-500 bg-yellow-500/5"
+            }`}
+          >
+            <div className="flex gap-4">
+              {isExceeded ? (
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1">
+                <AlertTitle
+                  className={
+                    isExceeded ? "text-destructive" : "text-yellow-700"
+                  }
+                >
+                  {isExceeded ? "Budget Exceeded!" : "Budget Warning"}
+                </AlertTitle>
+                <AlertDescription
+                  className={
+                    isExceeded ? "text-destructive/80" : "text-yellow-600/80"
+                  }
+                >
+                  {isExceeded ? (
+                    <>
+                      You have exceeded your monthly budget of{" "}
+                      {formatAmount(monthlyBudget)}. Current spending:{" "}
+                      {formatAmount(stats.total)}
+                    </>
+                  ) : (
+                    <>
+                      You've used {percentageUsed.toFixed(1)}% of your{" "}
+                      {formatAmount(monthlyBudget)} budget. Only{" "}
+                      {formatAmount(monthlyBudget - stats.total)} remaining.
+                    </>
+                  )}
+                </AlertDescription>
+              </div>
+            </div>
+          </Alert>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {monthlyBudget > 0 && (
-            <Card className="sm:col-span-2 lg:col-span-3">
+            <Card
+              className={`sm:col-span-2 lg:col-span-3 transition-all duration-300 hover:shadow-lg animate-fade-in ${
+                isExceeded
+                  ? "border-destructive/50 bg-destructive/5"
+                  : isWarning
+                  ? "border-yellow-500/50 bg-yellow-500/5"
+                  : ""
+              }`}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   <span>Monthly Budget Goal</span>
@@ -82,12 +153,17 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Progress
-                    value={getPercentageUsed(stats.total)}
-                    className="h-2"
-                  />
-                  <p className="text-xs text-muted-foreground text-right">
-                    {getPercentageUsed(stats.total).toFixed(1)}% used
+                  <Progress value={percentageUsed} className="h-2" />
+                  <p
+                    className={`text-xs text-right font-medium ${
+                      isExceeded
+                        ? "text-destructive"
+                        : isWarning
+                        ? "text-yellow-600"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {percentageUsed.toFixed(1)}% used
                   </p>
                 </div>
               </CardContent>

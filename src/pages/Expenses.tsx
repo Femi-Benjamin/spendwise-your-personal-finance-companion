@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useExpenses } from "@/hooks/useExpenses";
-import { useCurrency } from "@/context/CurrencyContext";
+import { useCurrency } from "@/context/useCurrency";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ExpenseCard } from "@/components/expenses/ExpenseCard";
 import { ExpenseForm } from "@/components/expenses/ExpenseForm";
@@ -24,11 +24,9 @@ export default function Expenses() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
   const [category, setCategory] = useState<ExpenseCategory | "all">("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
   const filterOptions = useMemo(
     () => ({
       category,
@@ -71,7 +69,7 @@ export default function Expenses() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Expenses
@@ -80,7 +78,10 @@ export default function Expenses() {
               Manage and track all your expenses
             </p>
           </div>
-          <Button onClick={() => handleOpenForm()} className="gap-2">
+          <Button
+            onClick={() => handleOpenForm()}
+            className="gap-2 transition-all duration-200 hover:shadow-md"
+          >
             <Plus className="w-4 h-4" />
             Add Expense
           </Button>
@@ -97,7 +98,7 @@ export default function Expenses() {
         />
 
         {expenses.length > 0 && (
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm animate-slide-up">
             <p className="text-muted-foreground">
               {expenses.length} expense{expenses.length !== 1 ? "s" : ""} found
             </p>
@@ -112,8 +113,8 @@ export default function Expenses() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : expenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4 transition-all duration-300 hover:scale-110">
               <Receipt className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">
@@ -125,7 +126,10 @@ export default function Expenses() {
                 : "Start tracking your spending by adding your first expense."}
             </p>
             {category === "all" && !startDate && !endDate && (
-              <Button onClick={() => handleOpenForm()} className="gap-2">
+              <Button
+                onClick={() => handleOpenForm()}
+                className="gap-2 transition-all duration-200 hover:shadow-md"
+              >
                 <Plus className="w-4 h-4" />
                 Add Your First Expense
               </Button>
@@ -133,13 +137,21 @@ export default function Expenses() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {expenses.map((expense) => (
-              <ExpenseCard
+            {expenses.map((expense, index) => (
+              <div
                 key={expense.id}
-                expense={expense}
-                onEdit={handleOpenForm}
-                onDelete={(id) => setDeleteId(id)}
-              />
+                style={{
+                  animation: `slideUp 0.5s ease-out forwards`,
+                  animationDelay: `${index * 50}ms`,
+                  opacity: 0,
+                }}
+              >
+                <ExpenseCard
+                  expense={expense}
+                  onEdit={handleOpenForm}
+                  onDelete={(id) => setDeleteId(id)}
+                />
+              </div>
             ))}
           </div>
         )}

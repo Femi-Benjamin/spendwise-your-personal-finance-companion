@@ -24,7 +24,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { Expense, ExpenseFormData, CATEGORY_LABELS, CATEGORY_ICONS, ExpenseCategory } from '@/types/expense';
 
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrency } from '@/context/useCurrency';
 
 const expenseSchema = z.object({
   amount: z.coerce.number().positive('Amount must be greater than 0'),

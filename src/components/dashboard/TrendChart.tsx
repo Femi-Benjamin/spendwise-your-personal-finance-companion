@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Expense } from '@/types/expense';
 import { format, getDate, getDaysInMonth, startOfMonth } from 'date-fns';
-import { useCurrency } from '@/context/CurrencyContext';
+import { useCurrency } from '@/context/useCurrency';
 import { TrendingUp } from 'lucide-react';
 
 interface TrendChartProps {
@@ -51,9 +51,9 @@ export function TrendChart({ expenses }: TrendChartProps) {
     }, [expenses]);
 
     return (
-        <Card className="col-span-1 lg:col-span-2">
+        <Card className="col-span-1 lg:col-span-2 transition-all duration-300 hover:shadow-md">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 transition-colors duration-300">
                     <TrendingUp className="h-5 w-5" /> Spending Trend (Daily)
                 </CardTitle>
             </CardHeader>
@@ -75,7 +75,7 @@ export function TrendChart({ expenses }: TrendChartProps) {
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `\u00A4${value}`} // Generic currency symbol just for axis
+                                tickFormatter={(value) => `\u00A4${value}`}
                             />
                             <Tooltip
                                 contentStyle={{
